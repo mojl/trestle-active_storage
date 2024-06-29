@@ -1,20 +1,13 @@
-<div class='nested-fields-container'>
+<div class="nested-fields-container">
   <%= builder.fields_for field_name do %>
-    <div class="active-storage">
+    <div class="active-storage" id="stored_images">
       <% if attachments.attached? && builder.object.persisted?  %>
-        <% attachments.each do |attachment| %>
-          <div class="active-storage__preview">
+        <% attachments.order(order: :asc).each do |attachment| %>
+          <div class="active-storage__preview stored_image" draggable="true">
             <% if attachment.previewable? %>
-              <%= link_to image_tag(main_app.url_for(attachment.preview(resize_to_limit: [300, 300])), class: "active-storage__image"),
-                          main_app.rails_blob_path(attachment, disposition: "attachment") %>
+              <%= image_tag(main_app.url_for(attachment.preview(resize_to_limit: [300, 300])), class: "active-storage__image", draggable: "false") %>
             <% elsif attachment.variable? %>
-              <%= link_to image_tag(main_app.url_for(attachment.variant(resize_to_limit: [300, 300])), class: "active-storage__image"),
-                          main_app.rails_blob_path(attachment, disposition: "attachment") %>
-            <% else %>
-              <%= link_to main_app.rails_blob_path(attachment, disposition: "attachment"), class: "btn btn-info" do %>
-                <i class="fa fa-download"></i>
-                <span class="btn-label">Download <%= field_name %></span>
-              <% end %>
+              <%= image_tag(main_app.url_for(attachment.variant(resize_to_limit: [300, 300])), class: "active-storage__image", draggable: "false") %>
             <% end %>
             <% if attachment.persisted? %>
               <div>
@@ -24,8 +17,13 @@
             <% else %>
               <small><%= attachment.blob.filename %></small>
             <% end %>
+            <div>
+              <%= link_to main_app.rails_blob_path(attachment, disposition: "attachment"), draggable: "false" do %>
+              <span class="btn-label">Download</span>
+            <% end %>
+            </div>
+            <%= builder.hidden_field("order_#{field_name}_#{attachment.blob_id.to_s.gsub('-', '')}", value: attachment.order, class: "order_image") %>
           </div>
-          <hr>
         <% end %>
       <% end %>
     </div>

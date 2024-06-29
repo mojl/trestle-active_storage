@@ -6,5 +6,9 @@ Trestle.configure do |config|
       javascript_include_tag('trestle/active_storage_fields.js')
   end
 
+  config.hook(:stylesheets) do
+    stylesheet_link_tag('trestle/active_storage_fields.css')
+  end
+
   config.form_field :active_storage_field, Trestle::ActiveStorage::Field
 end

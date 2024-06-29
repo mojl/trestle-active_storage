@@ -6,6 +6,7 @@ module Trestle
       included do
         before_action :define_attachment_accessors, only: [:show, :edit, :update, :destroy]
         before_action :filter_has_many_attachments, only: [:update]
+        after_action :order_attachments, only: [:update]
         after_action :purge_attachments, only: [:update]
         after_action :attach_attachments, only: [:update]
       end
@@ -41,6 +42,7 @@ module Trestle
             if attachment.respond_to?(:each)
               attachment.each do |att|
                 instance.class.send(:attr_accessor, "delete_#{field}_#{att.blob_id.to_s.gsub('-', '')}")
+                instance.class.send(:attr_accessor, "order_#{field}_#{att.blob_id.to_s.gsub('-', '')}")
               end
             else
               instance.class.send(:attr_accessor, "delete_#{field}")
@@ -58,6 +60,22 @@ module Trestle
               end
             else
               instance.send(field).purge if instance.try("delete_#{field}") == '1'
+            end
+          end
+        end
+
+        def order_attachments
+          admin.active_storage_fields.each do |field|
+            attachment = instance.send(field)
+
+            if attachment.respond_to?(:each)
+              attachment.each do |att|
+                order = instance.try("order_#{field}_#{att.blob_id.to_s.gsub('-', '')}")
+                if order != nil
+                  att.order = order
+                  att.save
+                end
+              end
             end
           end
         end
